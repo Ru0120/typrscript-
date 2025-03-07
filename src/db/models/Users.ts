@@ -19,7 +19,7 @@ interface UserModel extends Model<IUser> {
     email: string;
     password: string;
     username: string;
-  }): Promise<IUser>;
+  }): Promise<string>;
   login({
     email,
     password,
@@ -27,6 +27,7 @@ interface UserModel extends Model<IUser> {
     email: string;
     password: string;
   }): Promise<string>;
+  getProfile({ userId }: { userId: string }): Promise<IUser>;
 }
 
 // Define the User class with methods
@@ -48,7 +49,7 @@ class User {
       password,
       username,
     }: { email: string; password: string; username: string }
-  ): Promise<IUser> {
+  ): Promise<string> {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -59,7 +60,10 @@ class User {
     };
 
     const user = await this.create(doc);
-    return user;
+
+    const token = user.getToken();
+
+    return token;
   }
 
   static async login(
@@ -73,6 +77,7 @@ class User {
     }
 
     const valid = await bcrypt.compare(password, user.password);
+
     if (!valid) {
       throw new Error("Email eswel password buruu bn");
     }
@@ -82,6 +87,12 @@ class User {
       process.env.SECRET_KEY as string
     );
     return token;
+  }
+
+  static async getProfile(this: UserModel, { userId }: { userId: string }) {
+    const user = await this.findOne({ _id: { $eq: userId } });
+
+    return user;
   }
 }
 

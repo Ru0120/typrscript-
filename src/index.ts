@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { blogRoutes } from "./modules/blog/routes";
 import { userRoutes } from "./modules/user/routes";
+import { authRoutes } from "./modules/auth/routes";
 
 dotenv.config();
 mongoose.connect(process.env.MONGO_URL as string).then(() => {
@@ -14,7 +15,7 @@ const app = express();
 
 app.use(express.json());
 
-interface IAuthUser {
+export interface IAuthUser {
   userId: string;
 }
 
@@ -49,9 +50,9 @@ const authMiddleware = (
   }
 };
 
-//app.use("/", authRoutes);
+app.use("/", authRoutes);
 
-app.use("/users", authMiddleware, userRoutes);
+app.use("/user", authMiddleware, userRoutes);
 
 app.use("/blogs", authMiddleware, blogRoutes);
 

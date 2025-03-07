@@ -1,6 +1,6 @@
 import express, { Response } from "express";
 import { Blogs } from "../../db/models/blogs";
-import { IAuthRequest } from "../../index";
+import { IAuthRequest, IAuthUser } from "../../index";
 export const blogRoutes = express.Router();
 
 blogRoutes.post("/", async (req: IAuthRequest, res: Response) => {
@@ -14,16 +14,17 @@ blogRoutes.post("/", async (req: IAuthRequest, res: Response) => {
 });
 
 blogRoutes.put("/:blogId", async (req: IAuthRequest, res: Response) => {
-  const { userId } = req.user || {};
+  const { userId } = req.user || ({} as IAuthUser);
   const { blogId } = req.params;
-
+  const { title, description, content } = req.body;
   try {
-    const blog = await Blogs.findOneAndUpdate(
-      { _id: { $eq: blogId }, userId },
-      { $set: req.body },
-      { new: true }
-    );
-    console.log(blogId);
+    const blog = await Blogs.updateBlog({
+      blogId,
+      userId,
+      title,
+      description,
+      content,
+    });
     res.send(blog);
   } catch (e) {
     res.send("error");
@@ -42,7 +43,7 @@ blogRoutes.get("/me", async (req: IAuthRequest, res: Response) => {
 blogRoutes.get("/detail/:blogId", async (req, res) => {
   const { blogId } = req.params;
   try {
-    const blog = await Blogs.findOne({ _id: { $eq: blogId } });
+    const blog = await Blogs.getBlog({ blogId });
 
     res.send(blog);
   } catch (e) {}
@@ -61,7 +62,7 @@ blogRoutes.get("/users/:userId", async (req, res) => {
 blogRoutes.delete("/:blogId", async (req, res) => {
   const { blogId } = req.params;
 
-  const deleted = await Blogs.deleteOne({ usedId: { $eq: blogId } });
+  const deleted = await Blogs.removeBlog({ blogId });
 
   res.send(deleted);
 });

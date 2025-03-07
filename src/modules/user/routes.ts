@@ -4,7 +4,7 @@ import { IAuthRequest } from "../../index";
 
 import { Users } from "../../db/models/Users";
 
-export const userRoutes = express.Router();
+const userRoutes = express.Router();
 
 userRoutes.get("/get-token", async (req, res) => {
   const { email } = req.body;
@@ -38,7 +38,7 @@ userRoutes.get("/profile/:userId", async (req, res) => {
   const { userId } = req.params;
 
   try {
-    const user = await Users.findOne({ _id: { $eq: userId } });
+    const user = await Users.getProfile({ userId });
 
     res.send(user);
   } catch (e) {
@@ -74,3 +74,5 @@ userRoutes.put("/", async (req: IAuthRequest, res: Response) => {
     res.send("ooriin haygaar newterne vv");
   }
 });
+
+export { userRoutes };
